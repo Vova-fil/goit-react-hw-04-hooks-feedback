@@ -1,61 +1,65 @@
+import { useState } from 'react';
 import React from 'react';
 import { FeedbackOptions } from 'components/FeedbackOptions/FeedbackOptions';
 import { Notification } from './Notification/Notification';
 import { Section } from './Section/Section';
 import { Statistics } from './Statistics/Statistics';
 
-export class App extends React.Component {
-  state = {
-    good: 0,
-    neutral: 0,
-    bad: 0,
-  };
+export function App() {
+  const [good, setGood] = useState(0);
+  const [neutral, setNeutral] = useState(0);
+  const [bad, setBad] = useState(0);
+  const FeedbacType = { good, neutral, bad };
 
-  onLeaveFeedback = value => {
-    this.setState(preState => ({ [value]: preState[value] + 1 }));
-  };
+  function onLeaveFeedback(option) {
+    switch (option) {
+      case 'good':
+        setGood(prevGood => prevGood + 1);
+        break;
+      case 'neutral':
+        setNeutral(prevNeutral => prevNeutral + 1);
+        break;
+      case 'bad':
+        setBad(prevBad => prevBad + 1);
+        break;
+      default:
+        console.log(`No option called ${option}`);
+        break;
+    }
+  }
 
-  countTotalFeedback = () => {
-    const { good, neutral, bad } = this.state;
+  const countTotalFeedback = () => {
     return good + neutral + bad;
   };
 
-  countPositiveFeedbackPercentage = () => {
-    const { good } = this.state;
-    const total = this.countTotalFeedback();
+  const total = countTotalFeedback();
+
+  const countPositiveFeedbackPercentage = () => {
     return Math.round((good * 100) / total);
   };
 
-  render() {
-    const { good, neutral, bad } = this.state;
-    const total = this.countTotalFeedback(this.state);
-    const positivePercentage = this.countPositiveFeedbackPercentage(this.state);
+  return (
+    <>
+      <Section title="Please leave feedback">
+        <FeedbackOptions
+          onLeaveFeedback={onLeaveFeedback}
+          options={Object.keys(FeedbacType)}
+        />
+      </Section>
 
-    return (
-      <>
-        <Section title="Please leave feedback">
-          <FeedbackOptions
-            onLeaveFeedback={this.onLeaveFeedback}
-            options={Object.keys(this.state)}
+      <Section title="statistics">
+        {total ? (
+          <Statistics
+            good={good}
+            neutral={neutral}
+            bad={bad}
+            total={total}
+            positivePercentage={countPositiveFeedbackPercentage()}
           />
-        </Section>
-
-        <Section title="statistics">
-          {total ? (
-            <Statistics
-              good={good}
-              neutral={neutral}
-              bad={bad}
-              total={total}
-              positivePercentage={positivePercentage}
-            />
-          ) : (
-            <Notification message="There is no feedback" />
-          )}
-        </Section>
-      </>
-    );
-  }
+        ) : (
+          <Notification message="There is no feedback" />
+        )}
+      </Section>
+    </>
+  );
 }
-
-
